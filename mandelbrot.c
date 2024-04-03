@@ -9,6 +9,9 @@
 #include "config.h"
 
 
+void HandleKeyStrokes( float* xC, float* yC, float* scale );
+
+
 int main(){
 
     txCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -17,7 +20,7 @@ int main(){
 
     float xC = 0;       // Actual x coordinate of the left top corner of the window
     float yC = 0;       // Actual y coordinate of the left top corner of the window
-    float scale  = 1;   // Shows, how much user zoomed in/out
+    float scale  = 0.025;   // Shows, how much user zoomed in/out
 
     int count       = 0;   // counter of iterations
     int color       = 0;
@@ -31,30 +34,8 @@ int main(){
     float tmp = 0;
 
     for (;;) {
-        //------------------------------------------------------------------
-        //| Start of the keyStrokes handler
-        //------------------------------------------------------------------
-        if ( txGetAsyncKeyState ( VK_RIGHT ) || txGetAsyncKeyState ( 'D' ) )
-            xC += scale * ( MOVEMENT_SPEED + MOVEMENT_SPEED * txGetAsyncKeyState( VK_SHIFT ) * 9 );
-        if ( txGetAsyncKeyState ( VK_LEFT ) || txGetAsyncKeyState ( 'A' ) )
-            xC -= scale * ( MOVEMENT_SPEED + MOVEMENT_SPEED * txGetAsyncKeyState( VK_SHIFT ) * 9 );
 
-        if ( txGetAsyncKeyState ( VK_DOWN ) || txGetAsyncKeyState ( 'S' ) )
-            yC += scale * ( MOVEMENT_SPEED + MOVEMENT_SPEED * txGetAsyncKeyState( VK_SHIFT ) * 9 );
-        if ( txGetAsyncKeyState ( VK_UP   ) || txGetAsyncKeyState ( 'W' ) )
-            yC -= scale * ( MOVEMENT_SPEED + MOVEMENT_SPEED * txGetAsyncKeyState( VK_SHIFT ) * 9 );
-
-        if ( txGetAsyncKeyState ( 'Z' ) ) {
-            xC /= SCALE_MODIFIER;
-            yC /= SCALE_MODIFIER;
-            scale /= SCALE_MODIFIER;
-        }
-        if ( txGetAsyncKeyState ( 'X' ) ) {
-            xC *= SCALE_MODIFIER;
-            yC *= SCALE_MODIFIER;
-            scale *= SCALE_MODIFIER;
-        }
-
+        HandleKeyStrokes( &xC, &yC, &scale );
 
         #ifdef OUTPUT
             printf( "-------------\nCURRENT STATE\n-------------" );
@@ -65,6 +46,7 @@ int main(){
         #endif
 
         txLock();
+
         RGBQUAD* window = txVideoMemory();
         for ( int yPos = 0; yPos < WINDOW_HEIGHT; yPos++ ) {
             for ( int xPos = 0; xPos < WINDOW_WIDTH; xPos++ ) {
@@ -84,14 +66,17 @@ int main(){
                     color = color * color + START_COLOR;
 
                     tmp = Mald_x * Mald_x + Mald_y * Mald_y - start_y * start_y - start_x * start_x;
-                    if ( tmp >  RADIUS * RADIUS || tmp < -RADIUS * RADIUS ){
 
+                    if ( tmp >  RADIUS * RADIUS || tmp < -RADIUS * RADIUS )
                         break;
-                    }
+
                     prev_x = Mald_x;
                     prev_y = Mald_y;
 
                 }
+
+                if ( !count )
+                    color = DEFAULT_COLOR;
 
                 window[xPos + (-yPos + WINDOW_HEIGHT - 1) * WINDOW_WIDTH].rgbBlue    = color % 256;
                 color >>= 8;
@@ -111,5 +96,31 @@ int main(){
         //| End of the keyStrokes handler
         //------------------------------------------------------------------
 
+    }
+}
+
+
+
+
+void HandleKeyStrokes( float* xC, float* yC, float* scale ) {
+    if ( txGetAsyncKeyState ( VK_RIGHT ) || txGetAsyncKeyState ( 'D' ) )
+        *xC += *scale * ( MOVEMENT_SPEED + MOVEMENT_SPEED * txGetAsyncKeyState( VK_SHIFT ) * 9 );
+    if ( txGetAsyncKeyState ( VK_LEFT ) || txGetAsyncKeyState ( 'A' ) )
+        *xC -= *scale * ( MOVEMENT_SPEED + MOVEMENT_SPEED * txGetAsyncKeyState( VK_SHIFT ) * 9 );
+
+    if ( txGetAsyncKeyState ( VK_DOWN ) || txGetAsyncKeyState ( 'S' ) )
+        *yC += *scale * ( MOVEMENT_SPEED + MOVEMENT_SPEED * txGetAsyncKeyState( VK_SHIFT ) * 9 );
+    if ( txGetAsyncKeyState ( VK_UP   ) || txGetAsyncKeyState ( 'W' ) )
+        *yC -= *scale * ( MOVEMENT_SPEED + MOVEMENT_SPEED * txGetAsyncKeyState( VK_SHIFT ) * 9 );
+
+    if ( txGetAsyncKeyState ( 'Z' ) ) {
+        *xC /= SCALE_MODIFIER;
+        *yC /= SCALE_MODIFIER;
+        *scale /= SCALE_MODIFIER;
+    }
+    if ( txGetAsyncKeyState ( 'X' ) ) {
+        *xC *= SCALE_MODIFIER;
+        *yC *= SCALE_MODIFIER;
+        *scale *= SCALE_MODIFIER;
     }
 }

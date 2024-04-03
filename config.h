@@ -14,7 +14,8 @@ const int START_COLOR   = ( START_RED << 16 ) + ( START_GREEN << 8 ) + START_BLU
 const int DEFAULT_RED   = 0;
 const int DEFAULT_BLUE  = 0;
 const int DEFAULT_GREEN = 0;
+const int DEFAULT_COLOR = ( DEFAULT_RED << 16 ) + ( DEFAULT_GREEN << 8 ) + DEFAULT_BLUE;
 
-const float RADIUS              = 12000000000;
+const float RADIUS              = 120;
 const int   MAXIMUM_ITERATIONS  = 255;
 

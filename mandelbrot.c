@@ -81,15 +81,18 @@ int main(){
 
 
                 while ( mm_gz_int_val( count, 0, mask ) ) {
+
+                    // MALD_Y = 2 * prev_x * prev_y + start_y
                     mm_cpy_fl    ( Mald_y, prev_x               );
                     mm_mul_fl_mm2( Mald_y, prev_y,      mask    );
                     mm_mul_fl_val( Mald_y, 2     ,      mask    );
                     mm_add_fl_mm2( Mald_y, start_y,     mask    );
 
+                    // Mald_x = prev_x * prev_x - prev_y * prev_y + start_x
                     mm_mul_fl_mm2( prev_x, prev_x,      mask    );
                     mm_mul_fl_mm2( prev_y, prev_y,      mask    );
                     mm_sub_fl_mm2( prev_x, prev_y,      mask    );
-                    mm_cpy_fl    ( Mald_x, prev_y               );
+                    mm_cpy_fl    ( Mald_x, prev_x               );
                     mm_add_fl_mm2( Mald_x, start_x,     mask    );
 
                     mm_mul_int_mm2( color, color,       mask    );
@@ -114,7 +117,7 @@ int main(){
 
                     for ( int i = 0; i < 4; i++ )
                         if ( tmp[i] > RADIUS * RADIUS || tmp[i] < -RADIUS * RADIUS ){
-                            count[i] = 0;
+                            count[i] = -1;
                         }
                     mm_cpy_fl( prev_x, Mald_x );
                     mm_cpy_fl( prev_y, Mald_y );
@@ -127,7 +130,7 @@ int main(){
 
                 }
 
-                if ( count[0] == 0 || count[1] == 0 )
+                if ( count[0] == 0 || count[1] == 0 || count[2] == 0 || count[3] == 0 )
                     mm_set_int( color, DEFAULT_COLOR );
 
                 for ( int i = 0; i < 4; i++ ){
@@ -158,31 +161,31 @@ inline void mm_set_int      ( int mm[4], int val )                          { fo
 inline int  mm_gz_int_val   ( int mm[4], int val, int mask[4] )       {
     int cnt = 0;
     for ( int i = 0; i < 4; i++ )
-        { cnt += mm[i] > val; mask[i] = mm[i] > val; }
+        { cnt += mm[i] > val; mask[i] = mm[i] > val;}
     return cnt;
     }
 
-inline void mm_sub_int_val  ( int mm[4], int val, const int mask[4] )       { for ( int i = 0; i < 4; i++ ) mm[i] -= val * mask[i];       }
+inline void mm_sub_int_val  ( int mm[4], int val, const int mask[4] )                           { for ( int i = 0; i < 4; i++ ) mm[i] -= val * mask[i];                     }
 
-inline void mm_add_int_val  ( int mm[4], int val, const int mask[4] )                          { for ( int i = 0; i < 4; i++ ) mm[i] += val * mask[i];       }
+inline void mm_add_int_val  ( int mm[4], int val, const int mask[4] )                           { for ( int i = 0; i < 4; i++ ) mm[i] += val * mask[i];                     }
 
-inline void mm_mul_int_val  ( int mm[4], int val, const int mask[4] )                          { for ( int i = 0; i < 4; i++ ) mm[i] *= val * mask[i] + !mask[i];       }
-inline void mm_mul_int_mm2  ( int mm[4], const int mm2[4], const int mask[4] )                 { for ( int i = 0; i < 4; i++ ) mm[i] *= mm2[i] * mask[i] + !mask[i];    }
+inline void mm_mul_int_val  ( int mm[4], int val, const int mask[4] )                           { for ( int i = 0; i < 4; i++ ) mm[i] *= val * mask[i] + !mask[i];          }
+inline void mm_mul_int_mm2  ( int mm[4], const int mm2[4], const int mask[4] )                  { for ( int i = 0; i < 4; i++ ) mm[i] *= mm2[i] * mask[i] + !mask[i];       }
 
-inline void mm_shr_int_val  ( int mm[4], int val )                          { for ( int i = 0; i < 4; i++ ) mm[i] >>= val;      }
+inline void mm_shr_int_val  ( int mm[4], int val )                                              { for ( int i = 0; i < 4; i++ ) mm[i] >>= val;                              }
 
 
-inline void mm_set_fl       ( float mm[4], float val )                      { for ( int i = 0; i < 4; i++ ) mm[i] = val;        }
-inline void mm_cpy_fl       ( float mm[4], const float mm2[4] )             { for ( int i = 0; i < 4; i++ ) mm[i] = mm2[i];     }
+inline void mm_set_fl       ( float mm[4], float val )                                          { for ( int i = 0; i < 4; i++ ) mm[i] = val;                                }
+inline void mm_cpy_fl       ( float mm[4], const float mm2[4] )                                 { for ( int i = 0; i < 4; i++ ) mm[i] = mm2[i];                             }
 
-inline void mm_add_fl_val   ( float mm[4], float val, const int mask[4] )                      { for ( int i = 0; i < 4; i++ ) mm[i] += val * mask[i];       }
-inline void mm_add_fl_mm2   ( float mm[4], const float mm2[4], const int mask[4] )             { for ( int i = 0; i < 4; i++ ) mm[i] += mm2[i] * mask[i];    }
+inline void mm_add_fl_val   ( float mm[4], float val, const int mask[4] )                       { for ( int i = 0; i < 4; i++ ) mm[i] += val * mask[i];                     }
+inline void mm_add_fl_mm2   ( float mm[4], const float mm2[4], const int mask[4] )              { for ( int i = 0; i < 4; i++ ) mm[i] += mm2[i] * mask[i];                  }
 
-inline void mm_mul_fl_val   ( float mm[4], float val, const int mask[4] )                      { for ( int i = 0; i < 4; i++ ) mm[i] *= val * mask[i] + !mask[i];       }
-inline void mm_mul_fl_mm2   ( float mm[4], const float mm2[4], const int mask[4] )             { for ( int i = 0; i < 4; i++ ) mm[i] *= mm2[i] * mask[i] + !mask[i];    }
+inline void mm_mul_fl_val   ( float mm[4], float val, const int mask[4] )                       { for ( int i = 0; i < 4; i++ ) mm[i] *= val * mask[i] + !mask[i];          }
+inline void mm_mul_fl_mm2   ( float mm[4], const float mm2[4], const int mask[4] )              { for ( int i = 0; i < 4; i++ ) mm[i] *= mm2[i] * mask[i] + !mask[i];       }
 
-inline void mm_sub_fl_val   ( float mm[4], float val, const int mask[4] )                      { for ( int i = 0; i < 4; i++ ) mm[i] -= val * mask[i];       }
-inline void mm_sub_fl_mm2   ( float mm[4], const float mm2[4], const int mask[4] )             { for ( int i = 0; i < 4; i++ ) mm[i] -= mm2[i] * mask[i];    }
+inline void mm_sub_fl_val   ( float mm[4], float val, const int mask[4] )                       { for ( int i = 0; i < 4; i++ ) mm[i] -= val * mask[i];                     }
+inline void mm_sub_fl_mm2   ( float mm[4], const float mm2[4], const int mask[4] )              { for ( int i = 0; i < 4; i++ ) mm[i] -= mm2[i] * mask[i];                  }
 
 
 void HandleKeyStrokes( float* xC, float* yC, float* scale ) {
